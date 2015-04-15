@@ -3,14 +3,14 @@ Spark Table Stats is intended to provide summary statistics by column in an effi
 
 # Summary Statistics By Column:
  - Sum
- - Avgerage
+ - Average
  - Standard Deviation
  - Max
  - Min
- - Carnality (The number of records of frequence / total records)
+ - Carnality (The number of records of frequency / total records)
  - Count Nulls
  - Count Empties
- - Top (K) Values by Frequence (NOT COMPLETED)
+ - Top (K) Values by Frequency (NOT COMPLETED)
 
 # TODO:
  - Top(K) - Evaluate oppertunity to use combineByKey and create an empty min queue for each key. Merge values into the queue if its size is < K. If >= K, only merge the value if it exceeds the smallest element; if so add it and remove the smallest element. 
