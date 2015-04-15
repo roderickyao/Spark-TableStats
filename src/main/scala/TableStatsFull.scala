@@ -4,10 +4,9 @@ import org.apache.spark.rdd._
 import org.apache.spark.util.{CollectionsUtils, Utils}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.collection.mutable.PriorityQueue
 
-/**
- * Created by ted.malaska on 4/13/15.
- */
 object TableStatsFull {
   def main(args: Array[String]): Unit = {
 
@@ -37,6 +36,9 @@ object TableStatsFull {
         result
       })
     })
+
+    //Queue to hold the top 100 items
+    val topItems=new mutable.Queue[String]()
 
     //print output for us
     //columnIndexedRdd.take(100).foreach(r => println(r))
@@ -85,6 +87,15 @@ object TableStatsFull {
             rowCount += 1
           }
 
+          //Maintain the queue of top 100 items
+          if(topItems.size<100){
+            topItems.enqueue(r._1)
+          }
+          //Remove the lowest item when the queue reach its limit. Since the data is sorted, we are good here
+          if(topItems.size==100){
+            topItems.dequeue()
+            topItems.enqueue(r._1)
+          }
           unique += 1
           lastValue = value
           rowCount = 1
@@ -97,8 +108,13 @@ object TableStatsFull {
         if (value.toLong > max)
           max = value.toLong
       })
-      println("Column: " + column + " Carnality: " + unique.toDouble / counter.toDouble+ " Min: " + min + " Max: " + max)
-      println("Column: " + column +" Nulls:" + nulls +" Empty Cells: "+ emptyCells)
+
+      for(i<-0 until topItems.size){
+        println("Column: " +column+" Top "+i+": "+ topItems.dequeue())
+      }
+      println("Column: " + column + " Unique Values:" + unique )
+      println("Column: "+ column+ "  Carnality: " + unique.toDouble / counter.toDouble+ " Min: " + min + " Max: " + max)
+      println("Column: " + column +"  Nulls:" + nulls +" Empty Cells: "+ emptyCells)
 
       if (lastValue != null) {
         //println("X:" + column + "," + lastValue.toLong + "," + rowCount )
@@ -106,6 +122,7 @@ object TableStatsFull {
         accumulator.+=(accPart)
       }
     })
+
 
     val accLocalValue = accumulator.localValue
     var avgMap:Map[String, Double] = Map()
